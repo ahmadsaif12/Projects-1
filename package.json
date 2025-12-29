@@ -1,19 +1,23 @@
 {
-  "name": "first-js-projects",
+  "name": "wanderlust-app",
   "version": "1.0.0",
-  "description": "This is a basic javascript projects",
-  "main": "index.js",
+  "description": "Node + Express + EJS + Mongoose + Mongo Express",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "author": "Saif Ahmad",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "ejs-mate": "^4.0.0",
     "express": "^5.2.1",
     "method-override": "^3.0.0",
-    "mongoose": "^9.0.2",
+    "mongoose": "^9.0.2"
+  },
+  "devDependencies": {
     "nodemon": "^3.1.11"
   }
 }
