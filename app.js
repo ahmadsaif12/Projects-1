@@ -1,83 +1,80 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const ejsMate = require("ejs-mate");
+const methodOverride = require("method-override");
+const path = require("path");
+const Listing = require("./models/listing.js");
+
 const app = express();
 const port = 4500;
-var methodOverride = require("method-override")
-let path = require("path");
-let Listing = require("./models/listing.js")
 
-// ejs mate
-app.engine('ejs', ejsMate);
-// setting views
-app.set("view engine","ejs");
-app.set("views",path.join(__dirname,"views"));
+// EJS mate
+app.engine("ejs", ejsMate);
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
-// setting static files
-app.use(express.static(path.join(__dirname,"public")));
+// Static files
+app.use(express.static(path.join(__dirname, "public")));
 
-// method override
-app.use(methodOverride('_method'))
+// Method override
+app.use(methodOverride("_method"));
 
-// setting forms
-app.use(express.urlencoded({extended:true}));
+// Forms
+app.use(express.urlencoded({ extended: true }));
 
-// connecting to mongoose
-const mongo_url='mongodb://127.0.0.1:27017/wanderlust';
-main().then(()=>{console.log("connected to db")}).catch((err)=>{console.log(err)});
+// MongoDB connection
+const mongo_url = "mongodb://mongo:27017/wanderlust";
 
-async function main(){
-    await mongoose.connect(mongo_url);
-}
+mongoose.connect(mongo_url)
+  .then(() => {
+    console.log("MongoDB connected");
 
-// get all listings
-app.get("/listings", async (req,res) => {
-    let alllistings = await Listing.find({});
-    res.render("listings/index.ejs",{alllistings})
+    // Start Express server only after MongoDB is connected
+    app.listen(port, () => {
+      console.log(`App is running on ${port}`);
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB connection failed:", err);
+  });
+
+// Routes
+
+app.get("/listings", async (req, res) => {
+  const alllistings = await Listing.find({});
+  res.render("listings/index.ejs", { alllistings });
 });
 
-// create new listing get request
-app.get("/listings/new", (req,res) => {
-   res.render("listings/new.ejs");
+app.get("/listings/new", (req, res) => {
+  res.render("listings/new.ejs");
 });
 
-// new listing
-app.post("/listings", async (req,res) => {
-    let newlisting = new Listing(req.body.listing);
-    await newlisting.save();
-    res.redirect("/listings");
-})
-
-// show listing
-app.get("/listings/:_id", async(req,res) => {
-    let {_id} = req.params;
-    let listing = await Listing.findById(_id);
-    res.render("listings/show.ejs",{listing})
+app.post("/listings", async (req, res) => {
+  const newlisting = new Listing(req.body.listing);
+  await newlisting.save();
+  res.redirect("/listings");
 });
 
-// edit route
-app.get("/listings/:_id/edit", async(req,res) => {
-    let {_id} = req.params;
-    let listing = await Listing.findById(_id);
-    res.render("listings/edit.ejs",{listing});
+app.get("/listings/:_id", async (req, res) => {
+  const { _id } = req.params;
+  const listing = await Listing.findById(_id);
+  res.render("listings/show.ejs", { listing });
 });
 
-app.put("/listings/:_id", async(req,res) => {
-    let {_id} = req.params;
-    let listing = await Listing.findByIdAndUpdate(_id,{...req.body.listing});
-    console.log(listing);
-    res.redirect("/listings");
-})
+app.get("/listings/:_id/edit", async (req, res) => {
+  const { _id } = req.params;
+  const listing = await Listing.findById(_id);
+  res.render("listings/edit.ejs", { listing });
+});
 
-// delete listings
-app.delete("/listings/:_id", async(req,res) => {
-    let {_id} = req.params;
-    let deletelistings = await Listing.findByIdAndDelete(_id);
-    console.log(deletelistings);
-    res.redirect("/listings");
-})
+app.put("/listings/:_id", async (req, res) => {
+  const { _id } = req.params;
+  await Listing.findByIdAndUpdate(_id, { ...req.body.listing });
+  res.redirect("/listings");
+});
 
-// running app
-app.listen(port, ()=>{
-    console.log(`app is running on ${port}`)
+app.delete("/listings/:_id", async (req, res) => {
+  const { _id } = req.params;
+  await Listing.findByIdAndDelete(_id);
+  res.redirect("/listings");
 });
