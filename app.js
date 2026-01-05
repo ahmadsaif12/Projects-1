@@ -3,78 +3,74 @@ const mongoose = require("mongoose");
 const ejsMate = require("ejs-mate");
 const methodOverride = require("method-override");
 const path = require("path");
-const Listing = require("./models/listing.js");
-
+const ExpressError=require("./utils/ExpressError.js"); // error handling if throws some status code
 const app = express();
 const port = 4500;
+const listings = require("./routes/listings.js");
+const reviews = require("./routes/reviews.js");
+const session=require("express-session");
+const flash=require("connect-flash");
 
-// EJS mate
+// ------------------ Middleware ------------------
 app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Static files
-app.use(express.static(path.join(__dirname, "public")));
 
-// Method override
-app.use(methodOverride("_method"));
+app.use(express.static(path.join(__dirname, "public"))); // serve static files
+app.use(methodOverride("_method")); // allow PUT/DELETE in forms
+app.use(express.urlencoded({ extended: true })); // parse form data
+app.use(express.json()); // parse JSON
 
-// Forms
-app.use(express.urlencoded({ extended: true }));
+// ------------------ MongoDB ------------------
+mongoose.connect("mongodb://mongo:27017/wanderlust?authSource=admin")
+  .then(() => console.log("MongoDB connected"))
+  .catch(err => console.error("MongoDB connection failed:", err));
 
-// MongoDB connection
-const mongo_url = "mongodb://mongo:27017/wanderlust";
-
-mongoose.connect(mongo_url)
-  .then(() => {
-    console.log("MongoDB connected");
-
-    // Start Express server only after MongoDB is connected
-    app.listen(port, () => {
-      console.log(`App is running on ${port}`);
-    });
+app.get("/",(req,res)=>{
+    res.send("hey iam root");
   })
-  .catch((err) => {
-    console.error("MongoDB connection failed:", err);
-  });
 
-// Routes
 
-app.get("/listings", async (req, res) => {
-  const alllistings = await Listing.find({});
-  res.render("listings/index.ejs", { alllistings });
+  //sessions middleware
+const sessionOptions={
+  secret:"mysecretcode",
+  resave:false,
+  saveuninitialized:true,
+  cookie:{
+    expires:Date.now()+ 7 * 24 * 60 * 60 * 1000,
+    maxAge:7 * 24 * 60 * 60 * 1000,
+    httpOnly:true,
+  },
+}
+app.use(session(sessionOptions));
+
+//connect flash
+app.use(flash());
+
+//flash middleware
+
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  next();
 });
 
-app.get("/listings/new", (req, res) => {
-  res.render("listings/new.ejs");
+app.use("/listings", listings);
+app.use("/listings/:_id/reviews",reviews);
+
+
+//validation error
+app.use((req,res,next)=>{
+  next(new ExpressError(404,"page not found"))
 });
 
-app.post("/listings", async (req, res) => {
-  const newlisting = new Listing(req.body.listing);
-  await newlisting.save();
-  res.redirect("/listings");
+//error handling middleware
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message = "Something went wrong" } = err;
+  res.status(statusCode).render("error",{err});
 });
 
-app.get("/listings/:_id", async (req, res) => {
-  const { _id } = req.params;
-  const listing = await Listing.findById(_id);
-  res.render("listings/show.ejs", { listing });
-});
 
-app.get("/listings/:_id/edit", async (req, res) => {
-  const { _id } = req.params;
-  const listing = await Listing.findById(_id);
-  res.render("listings/edit.ejs", { listing });
-});
-
-app.put("/listings/:_id", async (req, res) => {
-  const { _id } = req.params;
-  await Listing.findByIdAndUpdate(_id, { ...req.body.listing });
-  res.redirect("/listings");
-});
-
-app.delete("/listings/:_id", async (req, res) => {
-  const { _id } = req.params;
-  await Listing.findByIdAndDelete(_id);
-  res.redirect("/listings");
-});
+// Start server
+app.listen(port, () => console.log(`App is running on ${port}`));

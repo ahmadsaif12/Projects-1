@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Listing = require("../models/listing.js");
 const initData = require('./data.js');
 
-const mongo_url = 'mongodb://mongo:27017/wanderlust';
+const mongo_url = 'mongodb://mongo:27017/wanderlust?authSource=admin"';
 
 async function initDb() {
   try {

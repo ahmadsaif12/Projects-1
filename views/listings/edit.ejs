@@ -4,8 +4,9 @@
   <div class="col-8 offset-2">
     <h3>Edit Listing</h3>
 
-    <form method="POST" action="/listings/<%= listing._id %>?_method=PUT">
+    <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" novalidate class="needs-validation">
 
+      <!-- Title -->
       <div class="mb-3">
         <label class="form-label">Title</label>
         <input 
@@ -14,9 +15,12 @@
           value="<%= listing.title %>" 
           class="form-control"
           required
-        >
+          />
+          <div class="valid-feedback">looks good</div>
+
       </div>
 
+      <!-- Description -->
       <div class="mb-3">
         <label class="form-label">Description</label>
         <textarea 
@@ -25,7 +29,9 @@
           class="form-control"
           required
         ><%= listing.description %></textarea>
+        <div class="invalid-feedback">please enter descriptions</div>
       </div>
+
 
       <div class="mb-3">
         <label class="form-label">Image URL</label>
@@ -34,10 +40,11 @@
           name="listing[image]" 
           value="<%= listing.image %>" 
           class="form-control"
+          required
         >
       </div>
 
-      <!-- Price + Location (same row) -->
+      <!-- Price + Location -->
       <div class="row">
         <div class="mb-3 col-md-4">
           <label class="form-label">Price</label>
@@ -48,6 +55,7 @@
             class="form-control"
             required
           >
+          <div class="invalid-feedback">please enter your price</div>
         </div>
 
         <div class="mb-3 col-md-8">
@@ -59,9 +67,11 @@
             class="form-control"
             required
           >
+          <div class="invalid-feedback">please enter your location</div>
         </div>
       </div>
 
+      <!-- Country -->
       <div class="mb-3">
         <label class="form-label">Country</label>
         <input 
@@ -71,10 +81,13 @@
           class="form-control"
           required
         >
+        <div class="invalid-feedback">please enter country name</div>
       </div>
+
 
       <button class="btn btn-dark edit-btn">Update</button>
       <br><br>
     </form>
   </div>
 </div>
+
