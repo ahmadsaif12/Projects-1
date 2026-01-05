@@ -3,7 +3,7 @@ const router=express.Router({mergeParams:true});
 const {reviewSchema}  =require("../schema.js");
 const Listing=require("../models/listing.js");
 const Review = require("../models/review.js");
-const WrapAsync=require("../utils/WrapAsync.js");  // validating each data by type in database
+const WrapAsync=require("../utils/WrapAsync.js");  
 const ExpressError=require("../utils/ExpressError.js");
 
 // validate reviews
