@@ -10,7 +10,7 @@ async function initDb() {
     console.log("MongoDB connected");
 
     await Listing.deleteMany({});
-
+    initData.data=initData.data.map((obj)=>({...obj,owner:"695d1fd8332789fe5b0ef059"}));
     await Listing.insertMany(initData.data);
     console.log("Database initialized successfully");
 

@@ -10,17 +10,18 @@
   <div class="card col-6 offset-3 show-card mt-3 listing-card">
     <img src="<%= listing.image %>" class="card-img-top show-image" alt="listing/image">
     <div class="card-body">
-      <p class="card-text">
-        <%= listing.description %><br>
-        NPR <%= Number(listing.price).toLocaleString('en-IN') %><br>
-        <%= listing.location %><br>
-        <%= listing.country %>
-      </p>
+      <p class="card-text">Owned by <%= listing.owner.username %></p>
+      <p class="card-text"><%= listing.description %></p>
+      <p class="card-text"> NPR <%= Number(listing.price).toLocaleString('en-IN') %> </p>
+      <p class="card-text"> <%= listing.location %></p>
+      <p class="card-text"><%= listing.country %></p>
     </div>
+
   </div> 
 </div>
 
 <!-- Edit & Delete Buttons -->
+
 <div class="btns mb-5 mt-3">
   <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark edit-btn col-1 offset-3">Edit</a>
   <br>
@@ -29,7 +30,6 @@
   </form>
 </div>
 
-<!-- Review Form -->
 <div class="col-8 offset-3 mt-1">
   <hr>
   <h4>Leave a review</h4>
