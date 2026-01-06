@@ -13,8 +13,13 @@ router.post("/signup",WrapAsync(async(req,res)=>{
     const newuser=new User({email,username})
     const registeruser=await User.register(newuser,password);
     console.log(registeruser);
-    req.flash("success","welcome to listings websiter");
-    res.redirect("/listings");
+    req.login(registeruser,(err)=>{
+      if(err){
+        next(err)
+      };
+      req.flash("success","welcome to listings websiter");
+      res.redirect("/listings");
+    })
     }catch(err){
         req.flash("error",err.message);
         res.redirect("/signup");
@@ -35,4 +40,15 @@ router.post(
     res.redirect("/listings"); 
   }
 );
+
+//logout
+router.get("/logout",(req,res,next)=>{
+  req.logout((err)=>{
+    if(err){
+      next(err)
+    }
+    req.flash("success","you logout successfully!");
+    res.redirect("/listings");
+  })
+})
 module.exports = router;
