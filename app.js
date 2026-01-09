@@ -65,7 +65,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/listings", listings);
-app.use("/listings/:listingId/reviews", reviews);
+app.use("/listings/:id/reviews", reviews);
 app.use("/", users);
 
 app.use((req, res, next) => {
@@ -79,5 +79,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log(`🚀 Server running on port ${port}`);
+  console.log(` Server running on port ${port}`);
 });

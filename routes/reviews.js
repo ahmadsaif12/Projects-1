@@ -1,35 +1,45 @@
-const express=require("express");
-const router=express.Router({mergeParams:true});
-const Listing=require("../models/listing.js");
-const Review = require("../models/review.js");
-const WrapAsync=require("../utils/WrapAsync.js");  
-const ExpressError=require("../utils/ExpressError.js");
-const {validateReview}=require("../middleware.js");
+const express = require("express");
+const router = express.Router({ mergeParams: true });
+const Listing = require("../models/listing");
+const Review = require("../models/review");
+const WrapAsync = require("../utils/WrapAsync");
+const { validateReview, Isloggedin, isReviewAuthor } = require("../middleware");
 
- 
-//review create
 router.post(
   "/",
+  Isloggedin,
   validateReview,
   WrapAsync(async (req, res) => {
-    const listing = await Listing.findById(req.params._id);
+    const listing = await Listing.findById(req.params.id);
+    if (!listing) {
+      req.flash("error", "Listing not found");
+      return res.redirect("/listings");
+    }
     const newReview = new Review(req.body.review);
-    await newReview.save();           // save first
+    newReview.author = req.user._id;
     listing.reviews.push(newReview._id);
+    await newReview.save();
     await listing.save();
     req.flash("success", "New review created!");
-
     res.redirect(`/listings/${listing._id}`);
   })
 );
 
-//delete review
-router.delete("/:reviewId",WrapAsync(async(req,res)=>{
-  let{_id,reviewId}=req.params;
-  await Listing.findByIdAndUpdate(_id,{$pull:{reviews:reviewId}});
-  await Review.findByIdAndDelete(reviewId);
-  req.flash("success", "review Deleted");
-  res.redirect(`/listings/${_id}`);
+router.delete(
+  "/:reviewId",
+  Isloggedin,isReviewAuthor,
+  WrapAsync(async (req, res) => {
+    const { id, reviewId } = req.params;
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      req.flash("error", "Listing not found");
+      return res.redirect("/listings");
+    }
+    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+    await Review.findByIdAndDelete(reviewId);
+    req.flash("success", "Review Deleted");
+    res.redirect(`/listings/${id}`);
+  })
+);
 
-}))
-module.exports=router;
+module.exports = router;
